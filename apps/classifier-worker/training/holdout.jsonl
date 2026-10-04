@@ -1,0 +1,40 @@
+{"text":"晚饭吃什么比较健康？","label":"general"}
+{"text":"帮我写一段婚礼致辞，两分钟左右","label":"general"}
+{"text":"把“欢迎光临”翻译成法语","label":"general"}
+{"text":"解释一下什么是区块链，别太专业","label":"general"}
+{"text":"How many days are there in a leap year?","label":"general"}
+{"text":"Write a friendly reminder message about tomorrow's meeting.","label":"general"}
+{"text":"Explain how photosynthesis works in simple terms.","label":"general"}
+{"text":"给我讲个冷笑话","label":"general"}
+{"text":"What is the capital of France?","label":"general"}
+{"text":"帮我把这段自我介绍缩短到一百字","label":"general"}
+{"text":"帮我查一下目前主流开源 TTS 模型的质量对比，附评测来源","label":"research"}
+{"text":"调研一下 SQLite WAL 模式在 Windows 上的已知问题","label":"research"}
+{"text":"找一下关于 LLM 路由（按任务选模型）的最新论文和开源实现","label":"research"}
+{"text":"Search for and verify current reliability evidence, then summarize the trade-offs.","label":"research"}
+{"text":"Find credible sources on how much int8 quantization hurts multilingual classifier accuracy.","label":"research"}
+{"text":"Look into which Windows versions ship WebView2 by default, cite Microsoft docs.","label":"research"}
+{"text":"收集一下社区对 Tauri 2 稳定性的反馈，归纳主要问题","label":"research"}
+{"text":"核实：Go 1.25 是否改进了 Windows 上的定时器精度","label":"research"}
+{"text":"Compare published throughput numbers for YARP and Envoy.","label":"research"}
+{"text":"查一下各家 AI 厂商对 API 转发和共享账号的政策条款","label":"research"}
+{"text":"这个接口返回 400，帮我看看请求体哪里不对并改好","label":"coding"}
+{"text":"用 C# 写一个读取 appsettings.json 的强类型配置类","label":"coding"}
+{"text":"写一个脚本把日志里的 ERROR 行提取出来按小时统计","label":"coding"}
+{"text":"Fix the off-by-one error in this pagination function.","label":"coding"}
+{"text":"Write a Go test for this handler using httptest.","label":"coding"}
+{"text":"My Rust code says 'borrowed value does not live long enough', help.","label":"coding"}
+{"text":"帮我把这个同步 IO 改成异步，并处理取消","label":"coding"}
+{"text":"npm install 报 ERESOLVE，怎么解决","label":"coding"}
+{"text":"Implement a function that deduplicates a list while keeping order.","label":"coding"}
+{"text":"给这个类加上 IDisposable 并正确释放资源","label":"coding"}
+{"text":"设计一个单机网关的进程和存储架构，要求只在 Windows 上运行","label":"architect"}
+{"text":"评估把 Go core 换成 .NET 的取舍，给出推荐方案和迁移步骤","label":"architect"}
+{"text":"Audit the current routing contract and list the blocking gaps.","label":"architect"}
+{"text":"Propose an architecture for plugging headless agents into the gateway via ACP.","label":"architect"}
+{"text":"帮我拆分这个系统的领域边界，哪些模块应该独立部署","label":"architect"}
+{"text":"Design a fallback strategy when the intent classifier is unavailable.","label":"architect"}
+{"text":"规划一下从零搭建内部 AI 平台的整体技术方案","label":"architect"}
+{"text":"Review this design doc and point out scalability risks.","label":"architect"}
+{"text":"如何设计密钥存储，兼顾安全和跨设备同步","label":"architect"}
+{"text":"Plan the rollout of a new storage schema with zero data loss.","label":"architect"}

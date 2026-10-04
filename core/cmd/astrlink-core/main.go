@@ -20,6 +20,8 @@ import (
 	"github.com/QuantumNous/astrlink/core/contract"
 	"github.com/QuantumNous/astrlink/core/internal/accesstoken"
 	"github.com/QuantumNous/astrlink/core/internal/accountauth"
+	"github.com/QuantumNous/astrlink/core/internal/autoclassifier"
+	"github.com/QuantumNous/astrlink/core/internal/automodel"
 	"github.com/QuantumNous/astrlink/core/internal/buildinfo"
 	"github.com/QuantumNous/astrlink/core/internal/codingplan"
 	"github.com/QuantumNous/astrlink/core/internal/controlapi"
@@ -181,6 +183,32 @@ func main() {
 			logger.Printf("configure local privacy filter: %v", err)
 			os.Exit(1)
 		}
+		autoClassifierRegistry, err := automodel.NewRegistry(filepath.Join(dataDirectory, "auto-classifiers"))
+		if err != nil {
+			_ = store.Close()
+			logger.Printf("configure auto classifier registry: %v", err)
+			os.Exit(1)
+		}
+		if classifierWorkerPath == "" {
+			classifierWorkerPath, err = autoclassifier.SiblingExecutablePath()
+			if err != nil {
+				logger.Printf("locate classifier worker: %v", err)
+				classifierWorkerPath = ""
+			}
+		}
+		var autoClassifierClient *autoclassifier.Client
+		if classifierWorkerPath != "" {
+			autoClassifierClient, err = autoclassifier.New(autoclassifier.Config{
+				ExecutablePath: classifierWorkerPath,
+				Model:          autoClassifierRegistry,
+			})
+			if err != nil {
+				_ = store.Close()
+				logger.Printf("configure auto classifier client: %v", err)
+				os.Exit(1)
+			}
+			defer autoClassifierClient.Close()
+		}
 		conversionEngine := relaykitbridge.NewEngine()
 		// One registry serves inference, gateway-initiated requests and
 		// learning, so a learned identity applies everywhere at once.
@@ -257,6 +285,7 @@ func main() {
 			ResponseStartTimeout:     time.Duration(responseStartTimeoutSeconds) * time.Second,
 			SubscriptionRisk:         subscriptionRiskReporter{manager: subscriptionManager},
 			Identities:               identities,
+			Classifier:               autoClassifierClient,
 		}
 		handler, err := controlapi.NewWithDependencies(config.Version, controlapi.Dependencies{
 			ServiceStore: store,
@@ -275,6 +304,8 @@ func main() {
 			ServiceModels:      servicemodel.New(store, subscriptionManager, nil),
 			ServiceTester:      servicetest.NewWithDependencies(gatewayDependencies, subscriptionManager.APIBaseURLFor),
 			BuiltinToolTester:  ingress.NewWithDependencies(gatewayDependencies),
+			AutoClassifiers:    autoClassifierRegistry,
+			AutoClassifier:     autoClassifierClient,
 			ControlToken:       controlToken,
 			ConversionEngine:   conversionEngine,
 			Shutdown:           stopSignals,

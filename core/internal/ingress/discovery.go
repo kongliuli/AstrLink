@@ -81,8 +81,9 @@ func (handler *Handler) aggregateModelDiscovery(
 	request *http.Request,
 	classified Request,
 	candidates []endpoint.Resolved,
-	redirects []contract.ModelRedirect,
+	settings contract.RoutingSettings,
 ) {
+	redirects := settings.ModelRedirects
 	if request.Context().Err() != nil {
 		return
 	}
@@ -134,6 +135,12 @@ func (handler *Handler) aggregateModelDiscovery(
 	for _, entry := range merged {
 		if entry.id != contract.AstrLinkAutoModelID && entry.id != "models/"+contract.AstrLinkAutoModelID {
 			visible = append(visible, entry)
+		}
+	}
+	if intentRoutingEnabled(settings) && classified.Protocol != contract.ProtocolGoogleModels {
+		synthesized, synthErr := synthesizeDiscoveryEntries(classified.Protocol, []string{contract.AstrLinkAutoModelID})
+		if synthErr == nil && len(synthesized) == 1 {
+			visible = append(visible, synthesized[0])
 		}
 	}
 	merged, err := appendRedirectDiscoveryEntries(classified.Protocol, visible, redirects)

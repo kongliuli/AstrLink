@@ -8,7 +8,7 @@ import (
 
 func TestLegacyRoutingControlEndpointsAreRetired(t *testing.T) {
 	_, handler := newRouteHandler(t)
-	for _, path := range []string{RoutesPath, RoutesPath + "/route_old", RecoveryPathsPath, RecoveryPathsPath + "/path_old", RecoveryPathsPath + "/preview", AutoClassifierPath, AutoClassifierLocalProbePath, AutoClassifierClassifyPreviewPath} {
+	for _, path := range []string{RoutesPath, RoutesPath + "/route_old", RecoveryPathsPath, RecoveryPathsPath + "/path_old", RecoveryPathsPath + "/preview"} {
 		for _, method := range []string{http.MethodGet, http.MethodPost, http.MethodPatch, http.MethodDelete} {
 			response := controlRequest(t, handler, method, path, "application/json", `{}`, `"old"`)
 			if response.Code != http.StatusGone || !strings.Contains(response.Body.String(), "routing_feature_retired") {

@@ -210,8 +210,11 @@ func newHandler(version contract.VersionResponse, dependencies Dependencies) (*H
 		handler.registerServiceRoutes()
 	}
 	handler.mux.HandleFunc(ServiceOrderPath, handler.authenticated(handler.serviceOrderResource))
-	for _, path := range []string{RoutesPath, RoutesPath + "/", RecoveryPathsPath, RecoveryPathsPath + "/", AutoClassifierPath, AutoClassifierPath + "/"} {
+	for _, path := range []string{RoutesPath, RoutesPath + "/", RecoveryPathsPath, RecoveryPathsPath + "/"} {
 		handler.mux.HandleFunc(path, handler.authenticated(handler.retiredRouting))
+	}
+	if handler.autoClassifiers != nil {
+		handler.registerAutoClassifierRoutes()
 	}
 	if handler.accessTokens != nil {
 		handler.registerAccessTokenRoutes()

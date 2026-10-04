@@ -169,6 +169,7 @@ type RoutingSettings struct {
 	CodexIdentityVersion  string `json:"codex_identity_version,omitempty"`
 	// ModelRedirects is always emitted; nil documents load as an empty table.
 	ModelRedirects         []ModelRedirect               `json:"model_redirects"`
+	IntentRouting          *IntentRouting                `json:"intent_routing,omitempty"`
 	ChannelStickiness      *ChannelStickiness            `json:"channel_stickiness,omitempty"`
 	DefaultRecoveryPaths   map[ProtocolID]RecoveryPathID `json:"default_recovery_paths,omitempty"`
 	DefaultFailurePolicy   FailurePolicy                 `json:"default_failure_policy"`
@@ -214,6 +215,11 @@ func (settings RoutingSettings) Validate() error {
 	}
 	if err := ValidateModelRedirects(settings.ModelRedirects); err != nil {
 		return err
+	}
+	if settings.IntentRouting != nil {
+		if err := settings.IntentRouting.Validate(); err != nil {
+			return err
+		}
 	}
 	if settings.ChannelStickiness != nil {
 		if err := settings.ChannelStickiness.Validate(); err != nil {
