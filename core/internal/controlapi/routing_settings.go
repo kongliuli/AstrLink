@@ -75,6 +75,8 @@ func (handler *Handler) routingSettingsResource(writer http.ResponseWriter, requ
 				destination = &settings.BuiltinTools
 			case "model_redirects":
 				destination = &settings.ModelRedirects
+			case "intent_routing":
+				destination = &settings.IntentRouting
 			case "channel_stickiness":
 				destination = &settings.ChannelStickiness
 			case "default_failure_policy":

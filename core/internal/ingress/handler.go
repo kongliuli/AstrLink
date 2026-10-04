@@ -326,10 +326,19 @@ func (handler *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Requ
 		classified = handler.applyModelRedirect(request.Context(), session, classified, routingSettings)
 	}
 	if classified.routingModel() == contract.AstrLinkAutoModelID {
-		session.captureUnreadRequestBody(request)
-		writeInferenceError(outWriter, http.StatusGone, "routing_feature_retired", "astrlink/auto is retired; request an explicit model", false, nil)
-		session.noteFailed(errorSummaryFromInference("routing_feature_retired", "automatic routing is retired", false))
-		return
+		resolved, intentErr := handler.resolveIntentModel(request.Context(), session, classified, routingSettings)
+		if intentErr != nil {
+			session.captureUnreadRequestBody(request)
+			if errors.Is(intentErr, errIntentRoutingDisabled) {
+				writeInferenceError(outWriter, http.StatusGone, "routing_feature_retired", "enable intent_routing to use astrlink/auto", false, nil)
+				session.noteFailed(errorSummaryFromInference("routing_feature_retired", "intent routing is disabled", false))
+				return
+			}
+			writeInferenceError(outWriter, http.StatusUnprocessableEntity, "intent_routing_unavailable", intentErr.Error(), false, nil)
+			session.noteFailed(errorSummaryFromInference("intent_routing_unavailable", intentErr.Error(), false))
+			return
+		}
+		classified = resolved
 	}
 	if handler.tryBuiltinTools(outWriter, request, classified, routingSettings) {
 		return
@@ -383,7 +392,7 @@ func (handler *Handler) ServeHTTP(writer http.ResponseWriter, request *http.Requ
 		return
 	}
 	if classified.Protocol.IsModelDiscovery() {
-		handler.aggregateModelDiscovery(outWriter, request, classified, candidates, routingSettings.ModelRedirects)
+		handler.aggregateModelDiscovery(outWriter, request, classified, candidates, routingSettings)
 		return
 	}
 	candidates = handler.preferChannelBinding(request, session, candidates)

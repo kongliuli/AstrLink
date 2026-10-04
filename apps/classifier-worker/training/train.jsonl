@@ -1,0 +1,160 @@
+{"text":"今天北京天气怎么样？适合出门跑步吗","label":"general"}
+{"text":"帮我写一段给同事的生日祝福，轻松一点","label":"general"}
+{"text":"把这段话翻译成英文：感谢您耐心等待，我们会尽快回复。","label":"general"}
+{"text":"用通俗的话解释一下什么是通货膨胀","label":"general"}
+{"text":"推荐几本适合周末看的小说","label":"general"}
+{"text":"周末带孩子去哪里玩比较好","label":"general"}
+{"text":"给我起五个咖啡店的名字","label":"general"}
+{"text":"帮我润色这封请假邮件，语气正式一些","label":"general"}
+{"text":"什么是光合作用？用小学生能听懂的方式讲","label":"general"}
+{"text":"总结一下这段会议记录的要点","label":"general"}
+{"text":"番茄炒蛋怎么做才好吃","label":"general"}
+{"text":"写一首关于秋天的短诗","label":"general"}
+{"text":"HTTP 和 HTTPS 有什么区别？简单说说","label":"general"}
+{"text":"解释一下什么是数据库索引","label":"general"}
+{"text":"帮我把这段中文改得更口语化","label":"general"}
+{"text":"失眠了怎么办，有什么放松的方法","label":"general"}
+{"text":"1 公里等于多少英里","label":"general"}
+{"text":"帮我想一个团建活动的方案，二十人左右","label":"general"}
+{"text":"给这篇文章起一个吸引人的标题","label":"general"}
+{"text":"你好，今天心情不太好，陪我聊聊","label":"general"}
+{"text":"What is the capital of Australia?","label":"general"}
+{"text":"Write a short thank-you note to my landlord.","label":"general"}
+{"text":"Translate 'see you tomorrow' into Japanese.","label":"general"}
+{"text":"Explain what a black hole is in simple terms.","label":"general"}
+{"text":"Give me three ideas for a birthday dinner.","label":"general"}
+{"text":"Summarize this paragraph in one sentence.","label":"general"}
+{"text":"Proofread my cover letter and fix the grammar.","label":"general"}
+{"text":"What does the idiom 'break the ice' mean?","label":"general"}
+{"text":"Suggest a name for my new cat.","label":"general"}
+{"text":"How long should I boil an egg for a soft yolk?","label":"general"}
+{"text":"Tell me a fun fact about octopuses.","label":"general"}
+{"text":"What is the difference between RAM and storage, briefly?","label":"general"}
+{"text":"Rewrite this sentence to sound more polite.","label":"general"}
+{"text":"Explain what an API is to a non-technical person.","label":"general"}
+{"text":"Make a packing list for a three-day beach trip.","label":"general"}
+{"text":"帮我写个朋友圈文案，刚跑完半马","label":"general"}
+{"text":"这个词 ephemeral 是什么意思","label":"general"}
+{"text":"简单介绍一下量子计算是什么","label":"general"}
+{"text":"帮我列一个本周的购物清单","label":"general"}
+{"text":"How do I politely decline a meeting invitation?","label":"general"}
+{"text":"调研一下 2026 年主流向量数据库的性能对比，给出来源","label":"research"}
+{"text":"帮我查一下 Rust 和 Go 在高并发网关场景下的公开基准测试数据","label":"research"}
+{"text":"搜集最近三个月关于大模型推理成本下降的报道并总结","label":"research"}
+{"text":"找几篇关于 RAG 检索质量评估方法的论文，列出核心结论","label":"research"}
+{"text":"核实一下这个说法：SQLite 不适合并发写入，有没有权威资料","label":"research"}
+{"text":"对比 OpenAI、Anthropic、Gemini 当前 API 的定价和限速，附链接","label":"research"}
+{"text":"调研国内有哪些提供 Coding Plan 的厂商，各自额度怎么样","label":"research"}
+{"text":"查一下 .NET 9 和 .NET 10 在 AOT 方面有什么变化","label":"research"}
+{"text":"整理一份关于隐私计算技术路线的综述，包含优缺点和代表项目","label":"research"}
+{"text":"帮我搜一下 ONNX Runtime 在 Windows ARM 上的支持情况","label":"research"}
+{"text":"收集用户对几款 AI 编程助手的评价，归纳主要痛点","label":"research"}
+{"text":"找找有没有开源的 LLM 网关项目，比较它们的功能和活跃度","label":"research"}
+{"text":"验证一下这个 CVE 影响哪些版本，官方有没有补丁","label":"research"}
+{"text":"研究一下文本分类小模型的蒸馏方法，给出几种主流做法和效果数据","label":"research"}
+{"text":"查一下欧盟 AI 法案对个人开发者有什么影响","label":"research"}
+{"text":"调查一下 WebView2 在企业内网环境下的部署限制","label":"research"}
+{"text":"汇总近期关于 prompt injection 防护的研究进展","label":"research"}
+{"text":"帮我找数据：全球开发者使用 AI 助手的比例，最好有调查报告","label":"research"}
+{"text":"比较几种中文分词工具的准确率，要有公开评测来源","label":"research"}
+{"text":"搜索一下 Tauri 2 和 Electron 的内存占用实测对比","label":"research"}
+{"text":"Search for and verify current reliability evidence for Kestrel under high load, then summarize.","label":"research"}
+{"text":"Find recent benchmarks comparing small multilingual embedding models.","label":"research"}
+{"text":"Research the current state of WebAssembly outside the browser and cite sources.","label":"research"}
+{"text":"Gather evidence on whether rate limiting hurts user retention in SaaS products.","label":"research"}
+{"text":"Look up the latest pricing changes for Claude and GPT models and compare them.","label":"research"}
+{"text":"Survey the literature on intent classification for chatbots and list key findings.","label":"research"}
+{"text":"Check whether the claim that Go GC pauses are under 1ms holds in recent versions.","label":"research"}
+{"text":"Compile a list of open-source OAuth device flow implementations and their maturity.","label":"research"}
+{"text":"Investigate what users report about ONNX Runtime memory leaks and summarize the evidence.","label":"research"}
+{"text":"Find sources on how other API gateways handle provider failover.","label":"research"}
+{"text":"What does the latest research say about quantizing BERT models to int8? Include accuracy numbers.","label":"research"}
+{"text":"Compare published latency numbers of SQLite versus LiteDB for embedded use.","label":"research"}
+{"text":"Collect official documentation links about Windows Credential Manager limits.","label":"research"}
+{"text":"Dig into recent GitHub issues about Tauri tray icons on Windows and summarize the common causes.","label":"research"}
+{"text":"Do a literature review on privacy-preserving redaction of PII in LLM prompts.","label":"research"}
+{"text":"查资料：Kimi、GLM、DeepSeek 最新模型的上下文长度和价格","label":"research"}
+{"text":"帮我调研一下市面上的本地隐私脱敏方案，列出优缺点和参考链接","label":"research"}
+{"text":"梳理一下 ACP（Agent Client Protocol）目前有哪些客户端支持，给出处","label":"research"}
+{"text":"Find out which AI coding agents support MCP servers today, with references.","label":"research"}
+{"text":"查查有没有人测过 gRPC 和 HTTP/2 JSON 的吞吐差距","label":"research"}
+{"text":"这个测试一直失败，帮我看看为什么：expected 3 got 2","label":"coding"}
+{"text":"用 Go 写一个读取 JSON 配置文件的函数，带错误处理","label":"coding"}
+{"text":"修复这个空指针异常：NullReferenceException at OrderService.Save","label":"coding"}
+{"text":"帮我写个 Python 脚本批量重命名文件夹里的图片","label":"coding"}
+{"text":"把这个 for 循环改成 LINQ 写法","label":"coding"}
+{"text":"这段 SQL 查询太慢了，帮我加索引或改写","label":"coding"}
+{"text":"写一个正则匹配中国大陆手机号","label":"coding"}
+{"text":"给这个函数补上单元测试，覆盖边界情况","label":"coding"}
+{"text":"TypeScript 报错 Property 'id' does not exist on type 'never'，怎么改","label":"coding"}
+{"text":"cargo build 报 lifetime 错误，帮我看下这段代码","label":"coding"}
+{"text":"写一个 PowerShell 脚本，结束所有名为 NetStrata 的进程再重新启动","label":"coding"}
+{"text":"帮我实现一个 LRU 缓存，要线程安全","label":"coding"}
+{"text":"这个 React 组件重复渲染，帮我找原因并修复","label":"coding"}
+{"text":"把这个回调风格的代码改成 async/await","label":"coding"}
+{"text":"git rebase 冲突了，给我解决步骤和命令","label":"coding"}
+{"text":"写一个 C# 扩展方法，把 DateTime 转成 Unix 时间戳","label":"coding"}
+{"text":"Dockerfile 构建很慢，帮我优化分层缓存","label":"coding"}
+{"text":"这个 goroutine 泄漏了，帮我定位并修复","label":"coding"}
+{"text":"实现一个函数：输入二叉树，返回层序遍历结果","label":"coding"}
+{"text":"帮我写一个 HTTP 中间件，给每个请求加上 request id","label":"coding"}
+{"text":"Fix this failing API test and provide the patch.","label":"coding"}
+{"text":"Write a bash one-liner to find the largest files in a directory.","label":"coding"}
+{"text":"Why does this Python code raise KeyError: 'name'? Fix it.","label":"coding"}
+{"text":"Refactor this function to remove the duplicated branches.","label":"coding"}
+{"text":"Implement debounce in JavaScript without lodash.","label":"coding"}
+{"text":"Add input validation to this Express route handler.","label":"coding"}
+{"text":"Convert this class component to a React hook.","label":"coding"}
+{"text":"My unit test is flaky because of time.Now(); make it deterministic.","label":"coding"}
+{"text":"Write a SQL query that returns the top 5 customers by revenue per month.","label":"coding"}
+{"text":"The build fails with 'undefined reference to main'. What's wrong?","label":"coding"}
+{"text":"Implement retry with exponential backoff for this HTTP client call.","label":"coding"}
+{"text":"Parse this CSV in Rust using serde and print the totals.","label":"coding"}
+{"text":"Write a xUnit test that mocks IProcessLauncher and asserts the path.","label":"coding"}
+{"text":"Rename this variable everywhere and update the imports.","label":"coding"}
+{"text":"Here's a stack trace from my ASP.NET app, what's causing the 500?","label":"coding"}
+{"text":"Add a --verbose flag to this CLI and print debug logs when set.","label":"coding"}
+{"text":"帮我把这段 Go 代码的错误处理改成 errors.Is 判断","label":"coding"}
+{"text":"写一个 WPF 托盘图标的最小示例","label":"coding"}
+{"text":"go vet 提示 copylocks，这段怎么改","label":"coding"}
+{"text":"Make this regex also match URLs with query strings.","label":"coding"}
+{"text":"评审一下这个服务拆分方案，指出边界问题并给出更稳妥的上线步骤","label":"architect"}
+{"text":"我要做一个只在 Windows 单机运行的本地 AI 网关，帮我设计整体架构","label":"architect"}
+{"text":"把现有单体应用迁移到微服务，给一个分阶段的迁移计划和风险点","label":"architect"}
+{"text":"设计一个支持多提供商故障切换的路由层，说明模块划分和数据流","label":"architect"}
+{"text":"这个项目用 Go 还是 .NET 重写更合适？从维护成本和生态角度给结论","label":"architect"}
+{"text":"审计一下当前的路由契约，列出阻塞上线的缺口","label":"architect"}
+{"text":"帮我规划隐私脱敏模块的边界：哪些在网关内做，哪些交给独立进程","label":"architect"}
+{"text":"设计一个请求记录的存储方案，要考虑保留期、索引和查询性能","label":"architect"}
+{"text":"如何设计插件系统，让第三方可以扩展协议转换","label":"architect"}
+{"text":"给这个桌面应用设计进程模型：UI、网关核心、推理 worker 怎么通信","label":"architect"}
+{"text":"评估把 SQLite 换成 PostgreSQL 的影响，给出取舍和建议","label":"architect"}
+{"text":"设计意图识别自动路由：分类结果如何映射到模型，失败如何兜底","label":"architect"}
+{"text":"帮我梳理这个代码库的模块依赖，指出耦合过紧的地方和重构方向","label":"architect"}
+{"text":"我们要支持多租户，数据隔离应该怎么设计","label":"architect"}
+{"text":"制定一个从 Tauri 桌面端切换到 WinForms 托盘的技术方案，分步骤","label":"architect"}
+{"text":"设计一套访问令牌和额度控制的权限模型","label":"architect"}
+{"text":"评审这个 API 版本化策略，是否能兼容旧客户端","label":"architect"}
+{"text":"给出这个系统的容量规划：每秒一千请求需要多少资源","label":"architect"}
+{"text":"设计一个可观测性方案，覆盖日志、指标和调用轨迹","label":"architect"}
+{"text":"规划一下这个功能的实施路线，拆成几个可独立交付的里程碑","label":"architect"}
+{"text":"Review this service boundary and propose a safer rollout plan.","label":"architect"}
+{"text":"Design the architecture for a local-first LLM gateway with privacy filtering.","label":"architect"}
+{"text":"Propose a migration strategy from REST polling to WebSockets with minimal downtime.","label":"architect"}
+{"text":"Should we split the classifier into its own process? Weigh isolation against latency.","label":"architect"}
+{"text":"Design a caching layer for model discovery that tolerates provider outages.","label":"architect"}
+{"text":"Evaluate event sourcing versus CRUD for our request audit log and recommend one.","label":"architect"}
+{"text":"Plan the module boundaries for rewriting the core in .NET while keeping the desktop UI.","label":"architect"}
+{"text":"Audit our authentication flow design and identify the trust boundaries.","label":"architect"}
+{"text":"How should we structure the monorepo so the Go core and Rust workers can release independently?","label":"architect"}
+{"text":"Design a retry and failover policy model that users can configure per provider.","label":"architect"}
+{"text":"Propose a data retention and deletion architecture that satisfies GDPR.","label":"architect"}
+{"text":"Create a technical design for streaming protocol conversion between OpenAI and Anthropic formats.","label":"architect"}
+{"text":"What is the right abstraction boundary between routing policy and transport?","label":"architect"}
+{"text":"Draft an architecture decision record for retiring automatic routing.","label":"architect"}
+{"text":"Design how the tray app, gateway service and worker processes supervise each other on Windows.","label":"architect"}
+{"text":"Assess the scalability limits of the current design and propose the next architecture.","label":"architect"}
+{"text":"帮我设计一个 Windows 服务 + 托盘的部署形态，开机自启、崩溃自恢复","label":"architect"}
+{"text":"评估一下把协议转换从 RelayKit 抽出来自己实现的风险和工作量构成","label":"architect"}
+{"text":"设计一个配置热更新机制，保证网关运行中修改路由不丢请求","label":"architect"}
+{"text":"Lay out a phased plan to add ACP support to the gateway without breaking existing clients.","label":"architect"}

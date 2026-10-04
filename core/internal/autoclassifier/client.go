@@ -34,9 +34,11 @@ import (
 )
 
 const (
-	protocolVersion   = 1
-	maxFrameBytes     = 64 << 20
-	defaultTimeout    = 2 * time.Second
+	protocolVersion = 1
+	maxFrameBytes   = 64 << 20
+	// Cold load of the MiniLM ONNX package can exceed 2s on Windows (DirectML).
+	// ponytail: one timeout covers later calls too; 15s is the ceiling.
+	defaultTimeout    = 15 * time.Second
 	processStopWait   = 5 * time.Second
 	maxStartupRetries = 1
 
