@@ -212,6 +212,34 @@ describe("failure policies", () => {
       ).toHaveLength(200);
     });
 
+    it("parses intent routing and rejects auto as a target", () => {
+      expect(parseRoutingSettings(settings).intent_routing).toBeUndefined();
+      expect(
+        parseRoutingSettings({
+          ...settings,
+          intent_routing: {
+            enabled: true,
+            targets: { coding: "gpt-5" },
+            fallback: "gpt-4.1-mini",
+          },
+        }).intent_routing,
+      ).toEqual({
+        enabled: true,
+        targets: { coding: "gpt-5" },
+        fallback: "gpt-4.1-mini",
+      });
+      expect(() =>
+        parseRoutingSettings({
+          ...settings,
+          intent_routing: {
+            enabled: true,
+            targets: {},
+            fallback: "astrlink/auto",
+          },
+        }),
+      ).toThrow();
+    });
+
     it("rejects malformed and invalid redirect lists", () => {
       for (const model_redirects of [
         null,

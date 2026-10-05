@@ -6,6 +6,10 @@ const bridge = vi.hoisted(() => ({
   builtinToolAction: vi.fn().mockResolvedValue({ configured: false }),
   getRoutingSettings: vi.fn(),
   updateRoutingSettings: vi.fn(),
+  listAutoClassifiers: vi.fn().mockResolvedValue({ items: [] }),
+  probeLocalAutoClassifier: vi.fn(),
+  installAutoClassifier: vi.fn(),
+  previewAutoClassifier: vi.fn(),
 }));
 vi.mock("./bridge", () => bridge);
 vi.mock("./notify", () => ({ notify: { success: vi.fn() } }));
@@ -678,6 +682,7 @@ describe("shared global recovery settings", () => {
     expect(tabs[0].textContent).toBe("模型与工具");
     expect(tabs[0].getAttribute("aria-selected")).toBe("true");
     expect(container.textContent).toContain("Codex 自动审查");
+    expect(container.textContent).toContain("意图路由（astrlink/auto）");
     // A document without model_redirects is not a pending change.
     expect(dirty).toHaveBeenLastCalledWith(false);
     expect(button("保存默认策略")).toBeUndefined();

@@ -123,6 +123,45 @@ fn validate_model_redirects(value: &serde_json::Value) -> Result<(), String> {
     Ok(())
 }
 
+const INTENT_CATEGORIES: [&str; 4] = ["general", "research", "coding", "architect"];
+
+fn validate_intent_routing(value: &serde_json::Value) -> Result<(), String> {
+    let routing = value
+        .as_object()
+        .ok_or("intent_routing must be an object")?;
+    if routing.len() != 3
+        || !routing
+            .get("enabled")
+            .is_some_and(serde_json::Value::is_boolean)
+    {
+        return Err("invalid intent_routing fields".into());
+    }
+    let enabled = routing["enabled"].as_bool().unwrap_or(false);
+    let fallback = routing.get("fallback").and_then(serde_json::Value::as_str);
+    if enabled || fallback.is_some_and(|model| !model.is_empty()) {
+        let model = redirect_model(routing.get("fallback"))?;
+        if model == ASTRLINK_AUTO_MODEL_ID {
+            return Err("intent_routing fallback must not be astrlink/auto".into());
+        }
+    } else if fallback.is_none() {
+        return Err("invalid intent_routing fallback".into());
+    }
+    let targets = routing
+        .get("targets")
+        .and_then(serde_json::Value::as_object)
+        .ok_or("invalid intent_routing targets")?;
+    for (category, model) in targets {
+        if !INTENT_CATEGORIES.contains(&category.as_str()) {
+            return Err("intent_routing category is invalid".into());
+        }
+        let model = redirect_model(Some(model))?;
+        if model == ASTRLINK_AUTO_MODEL_ID {
+            return Err("intent_routing target must not be astrlink/auto".into());
+        }
+    }
+    Ok(())
+}
+
 fn redirect_model(value: Option<&serde_json::Value>) -> Result<&str, String> {
     value
         .and_then(serde_json::Value::as_str)
@@ -180,6 +219,7 @@ pub(crate) fn validate_routing_settings(
             }
             "builtin_tools" => validate_builtin_tools(value)?,
             "model_redirects" => validate_model_redirects(value)?,
+            "intent_routing" => validate_intent_routing(value)?,
             "default_failure_policy" => validate_failure_policy(value)?,
             "allow_unmatched_failover"
             | "codex_identity_enforcement"
@@ -419,12 +459,39 @@ mod tests {
             "codex_identity_auto_learn": false,
             "claude_identity_version": "2.1.300",
             "codex_identity_version": "0.160.0",
+            "intent_routing": {
+                "enabled": false,
+                "targets": {},
+                "fallback": ""
+            },
             "builtin_tools": {
                 "web_search": {"enabled": true, "backend": "upstream", "service_id": "service_test", "model": "search-model"},
                 "image_generation": {"enabled": false, "backend": "upstream"}
             }
         });
         assert_eq!(validate_routing_settings(&settings, false), Ok(()));
+        assert!(validate_routing_settings(
+            &json!({
+                "intent_routing": {
+                    "enabled": true,
+                    "targets": {"coding": "gpt-5"},
+                    "fallback": "gpt-5"
+                }
+            }),
+            true
+        )
+        .is_ok());
+        assert!(validate_routing_settings(
+            &json!({
+                "intent_routing": {
+                    "enabled": true,
+                    "targets": {},
+                    "fallback": "astrlink/auto"
+                }
+            }),
+            true
+        )
+        .is_err());
     }
     fn redirect(from: &str, to: &str) -> serde_json::Value {
         json!({"from":from,"to":to,"enabled":true})

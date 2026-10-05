@@ -21,6 +21,10 @@ const bridgeMocks = vi.hoisted(() => ({
     .mockRejectedValue(new Error("tray unavailable in tests")),
   trayAction: vi.fn().mockRejectedValue(new Error("tray unavailable in tests")),
   getRoutingSettings: vi.fn(),
+  listAutoClassifiers: vi.fn().mockResolvedValue({ items: [] }),
+  probeLocalAutoClassifier: vi.fn(),
+  installAutoClassifier: vi.fn(),
+  previewAutoClassifier: vi.fn(),
   getServiceOrder: vi
     .fn()
     .mockResolvedValue({ service_ids: [], etag: '"order"' }),
@@ -973,7 +977,7 @@ describe("App workspace navigation", () => {
     expect(
       container.querySelector('[data-testid="routing-defaults-panel"]'),
     ).not.toBeNull();
-    expect(container.textContent).not.toContain("astrlink/auto");
+    expect(container.textContent).toContain("astrlink/auto");
     expect(container.textContent).not.toContain("通过验收前不可启用");
     expect(container.textContent).not.toContain("训练中 · 不可启用");
     expect(container.textContent).not.toContain("固定路由与别名");

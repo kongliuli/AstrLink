@@ -1155,6 +1155,37 @@ async fn update_routing_settings(
 }
 
 #[tauri::command]
+async fn probe_local_auto_classifier(
+    path: String,
+    manager: State<'_, Arc<CoreManager>>,
+) -> Result<serde_json::Value, String> {
+    manager.probe_local_auto_classifier(path).await
+}
+
+#[tauri::command]
+async fn install_auto_classifier(
+    path: String,
+    manager: State<'_, Arc<CoreManager>>,
+) -> Result<serde_json::Value, String> {
+    manager.install_auto_classifier(path).await
+}
+
+#[tauri::command]
+async fn list_auto_classifiers(
+    manager: State<'_, Arc<CoreManager>>,
+) -> Result<serde_json::Value, String> {
+    manager.list_auto_classifiers().await
+}
+
+#[tauri::command]
+async fn preview_auto_classifier(
+    text: String,
+    manager: State<'_, Arc<CoreManager>>,
+) -> Result<serde_json::Value, String> {
+    manager.preview_auto_classifier(text).await
+}
+
+#[tauri::command]
 async fn get_audit_settings(
     manager: State<'_, Arc<CoreManager>>,
 ) -> Result<serde_json::Value, String> {
@@ -1444,6 +1475,10 @@ pub fn run() {
             builtin_tool_action,
             get_routing_settings,
             update_routing_settings,
+            probe_local_auto_classifier,
+            install_auto_classifier,
+            list_auto_classifiers,
+            preview_auto_classifier,
             get_audit_settings,
             update_audit_settings,
             list_access_tokens,

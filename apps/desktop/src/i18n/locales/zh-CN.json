@@ -2136,6 +2136,37 @@
     "rulesTitle": "重试规则",
     "rulesHint": "默认应用于所有 API 提供商；单独配置的失败处理可覆盖这些规则。",
     "redirectsInvalid": "请完善模型重定向，完成后会自动保存。",
+    "intent": {
+      "title": "意图路由（astrlink/auto）",
+      "hint": "客户端请求 astrlink/auto 时，用本地分类器映射到下面的模型；同一会话会粘住首次结果。",
+      "categories": {
+        "general": "日常",
+        "research": "调研",
+        "coding": "编码",
+        "architect": "架构"
+      },
+      "targetPlaceholder": "选择或输入模型 ID",
+      "fallbackLabel": "兜底模型",
+      "fallbackRequired": "启用意图路由时必须填写兜底模型。",
+      "autoTarget": "目标和兜底都不能填 astrlink/auto。",
+      "pathLabel": "分类器目录",
+      "pathHint": "目录内需有 model.onnx 和 tokenizer.json。仓库里的包在 models/astrlink-intent-v1。",
+      "pathRequired": "请填写分类器目录。",
+      "import": "导入",
+      "importFailed": "导入分类器失败。",
+      "alreadyInstalled": "已导入",
+      "installed": "已安装：{{name}}",
+      "previewLabel": "试分类",
+      "preview": "预览",
+      "previewFailed": "预览失败。",
+      "previewCategory": "分类：{{category}}（{{ms}} ms）",
+      "fallback": {
+        "timeout": "分类器还在加载模型，请再预览一次。",
+        "classifier_unavailable": "分类器不可用。请先导入模型，并确认桌面端带有 astrlink-classifier-worker。",
+        "empty_text": "请先输入一句要分类的话。",
+        "invalid_text": "输入文本无效。"
+      }
+    },
     "tabs": {
       "modelsAndTools": "模型与工具",
       "redirects": "模型重定向",

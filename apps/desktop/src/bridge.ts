@@ -859,6 +859,98 @@ export async function updateRoutingSettings(
   );
 }
 
+export interface AutoClassifierInstallation {
+  id: string;
+  name?: string;
+  status?: string;
+}
+
+export interface AutoClassifierList {
+  items: AutoClassifierInstallation[];
+}
+
+export interface AutoClassifierPreview {
+  category?: string;
+  logits?: number[];
+  latency_ms: number;
+  fallback_reason?: string;
+}
+
+function parseAutoClassifierInstallation(
+  value: unknown,
+): AutoClassifierInstallation {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("invalid auto classifier installation");
+  }
+  const item = value as Record<string, unknown>;
+  if (typeof item.id !== "string" || !item.id) {
+    throw new Error("invalid auto classifier installation");
+  }
+  return {
+    id: item.id,
+    ...(typeof item.name === "string" ? { name: item.name } : {}),
+    ...(typeof item.status === "string" ? { status: item.status } : {}),
+  };
+}
+
+export async function probeLocalAutoClassifier(path: string): Promise<unknown> {
+  requireNativeBridge();
+  return invoke("probe_local_auto_classifier", { path });
+}
+
+export async function installAutoClassifier(
+  path: string,
+): Promise<AutoClassifierInstallation> {
+  requireNativeBridge();
+  return parseAutoClassifierInstallation(
+    await invoke<unknown>("install_auto_classifier", { path }),
+  );
+}
+
+export async function listAutoClassifiers(): Promise<AutoClassifierList> {
+  requireNativeBridge();
+  const value = await invoke<unknown>("list_auto_classifiers");
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("invalid auto classifier list");
+  }
+  const items = (value as { items?: unknown }).items;
+  if (!Array.isArray(items)) throw new Error("invalid auto classifier list");
+  return { items: items.map(parseAutoClassifierInstallation) };
+}
+
+export async function previewAutoClassifier(
+  text: string,
+): Promise<AutoClassifierPreview> {
+  requireNativeBridge();
+  const value = await invoke<unknown>("preview_auto_classifier", { text });
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("invalid auto classifier preview");
+  }
+  const preview = value as Record<string, unknown>;
+  if (
+    typeof preview.latency_ms !== "number" ||
+    !Number.isFinite(preview.latency_ms)
+  ) {
+    throw new Error("invalid auto classifier preview");
+  }
+  return {
+    latency_ms: preview.latency_ms,
+    ...(typeof preview.category === "string"
+      ? { category: preview.category }
+      : {}),
+    ...(Array.isArray(preview.logits)
+      ? {
+          logits: preview.logits.filter(
+            (item): item is number => typeof item === "number",
+          ),
+        }
+      : {}),
+    ...(typeof preview.fallback_reason === "string"
+      ? { fallback_reason: preview.fallback_reason }
+      : {}),
+  };
+}
+
 export async function builtinToolAction(
   kind: import("./builtin-tools-model").BuiltinToolKind,
   action: "status" | "save_key" | "delete_key" | "test",

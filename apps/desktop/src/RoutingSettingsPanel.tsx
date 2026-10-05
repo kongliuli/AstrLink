@@ -9,11 +9,14 @@ import {
   RecoveryOrderControls,
 } from "./components/FailoverEditor";
 import { FormMessage } from "./components/FormMessage";
+import { IntentRoutingEditor } from "./components/IntentRoutingEditor";
 import { ModelRedirectEditor } from "./components/ModelRedirectEditor";
 import { Panel, PanelHeader } from "./components/Panel";
 import { Button } from "./components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./components/ui/tabs";
 import {
+  compactIntentRouting,
+  expandIntentRouting,
   identityLearningKeys,
   identitySettingKeys,
   identityVersionKeys,
@@ -35,6 +38,7 @@ const routingSettingKeys = [
   "max_attempts",
   "channel_stickiness",
   "model_redirects",
+  "intent_routing",
   "builtin_tools",
   ...identitySettingKeys,
   ...subscriptionProtectionKeys,
@@ -52,7 +56,11 @@ const routingTabs = [
 
 // A document without the key has no redirects; compare and edit it as [].
 function withRedirects(settings: RoutingSettings): RoutingSettings {
-  return { ...settings, model_redirects: settings.model_redirects ?? [] };
+  return {
+    ...settings,
+    model_redirects: settings.model_redirects ?? [],
+    intent_routing: expandIntentRouting(settings.intent_routing),
+  };
 }
 
 export function RoutingSettingsPanel({
@@ -156,8 +164,17 @@ export function RoutingSettingsPanel({
       const original = JSON.parse(baseline) as RoutingSettings;
       const patch: Partial<RoutingSettings> = {};
       for (const key of routingSettingKeys) {
-        if (JSON.stringify(submitted[key]) !== JSON.stringify(original[key]))
-          Object.assign(patch, { [key]: submitted[key] });
+        if (JSON.stringify(submitted[key]) !== JSON.stringify(original[key])) {
+          if (key === "intent_routing") {
+            Object.assign(patch, {
+              intent_routing: compactIntentRouting(
+                expandIntentRouting(submitted.intent_routing),
+              ),
+            });
+          } else {
+            Object.assign(patch, { [key]: submitted[key] });
+          }
+        }
       }
       mutationVersion.current += 1;
       setSaving(true);
@@ -299,6 +316,15 @@ export function RoutingSettingsPanel({
                   }
                 />
               </fieldset>
+              <IntentRoutingEditor
+                value={draft.intent_routing}
+                modelOptions={modelOptions}
+                disabled={!ready}
+                onEditingChange={setEditingRedirect}
+                onChange={(intent_routing) =>
+                  changeDraft({ ...draft, intent_routing })
+                }
+              />
               <BuiltinToolsEditor
                 value={draft.builtin_tools}
                 services={services}

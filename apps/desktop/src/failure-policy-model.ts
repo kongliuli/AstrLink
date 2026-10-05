@@ -111,6 +111,65 @@ export const maxModelRedirects = 200;
 export const maxRedirectModelLength = 256;
 export const astrlinkAutoModelId = "astrlink/auto";
 
+export const intentTaxonomyLabels = [
+  "general",
+  "research",
+  "coding",
+  "architect",
+] as const;
+export type IntentCategory = (typeof intentTaxonomyLabels)[number];
+
+export interface IntentRouting {
+  enabled: boolean;
+  targets: Partial<Record<IntentCategory, string>>;
+  fallback: string;
+}
+
+export function defaultIntentRouting(): IntentRouting {
+  return { enabled: false, targets: {}, fallback: "" };
+}
+
+export function expandIntentRouting(
+  routing: IntentRouting | undefined,
+): IntentRouting {
+  const targets: Partial<Record<IntentCategory, string>> = {};
+  for (const label of intentTaxonomyLabels)
+    targets[label] = routing?.targets[label] ?? "";
+  return {
+    enabled: routing?.enabled ?? false,
+    targets,
+    fallback: routing?.fallback ?? "",
+  };
+}
+
+/** Wire shape: omit blank targets so Core validateRedirectModel stays happy. */
+export function compactIntentRouting(routing: IntentRouting): IntentRouting {
+  const targets: Partial<Record<IntentCategory, string>> = {};
+  for (const label of intentTaxonomyLabels) {
+    const model = routing.targets[label]?.trim() ?? "";
+    if (model) targets[label] = model;
+  }
+  return {
+    enabled: routing.enabled,
+    targets,
+    fallback: routing.fallback.trim(),
+  };
+}
+
+export type IntentRoutingIssue = "empty_fallback" | "auto_target";
+
+export function intentRoutingIssue(
+  routing: IntentRouting | undefined,
+): IntentRoutingIssue | undefined {
+  const value = expandIntentRouting(routing);
+  if (value.fallback === astrlinkAutoModelId) return "auto_target";
+  for (const label of intentTaxonomyLabels) {
+    if (value.targets[label] === astrlinkAutoModelId) return "auto_target";
+  }
+  if (value.enabled && !value.fallback) return "empty_fallback";
+  return undefined;
+}
+
 /** Built-in redirects are always shown; missing entries default to disabled. */
 export interface BuiltinModelRedirect {
   /** Key under `modelRedirect.builtin` in the locales. */
@@ -192,6 +251,7 @@ export interface RoutingSettings {
   codex_identity_version?: string;
   claude_identity_version?: string;
   model_redirects?: ModelRedirect[];
+  intent_routing?: IntentRouting;
   channel_stickiness?: ChannelStickiness;
   default_recovery_paths?: Record<string, string>;
   default_failure_policy: FailurePolicy;
@@ -406,6 +466,37 @@ function parseModelRedirects(value: unknown): ModelRedirect[] {
   return redirects;
 }
 
+function parseIntentRouting(value: unknown): IntentRouting | undefined {
+  if (value === undefined) return undefined;
+  const routing = object(value, "intent_routing");
+  keys(routing, ["enabled", "targets", "fallback"], [], "intent_routing");
+  if (
+    typeof routing.enabled !== "boolean" ||
+    typeof routing.fallback !== "string"
+  )
+    throw Error("intent_routing: invalid switch or fallback");
+  const rawTargets = object(routing.targets, "intent_routing.targets");
+  const targets: Partial<Record<IntentCategory, string>> = {};
+  for (const [category, model] of Object.entries(rawTargets)) {
+    if (!intentTaxonomyLabels.includes(category as IntentCategory))
+      throw Error("intent_routing: unknown category");
+    if (typeof model !== "string")
+      throw Error("intent_routing: invalid target");
+    if (!model) continue;
+    if (model !== model.trim() || [...model].length > maxRedirectModelLength)
+      throw Error("intent_routing: invalid target");
+    targets[category as IntentCategory] = model;
+  }
+  const parsed: IntentRouting = {
+    enabled: routing.enabled,
+    targets,
+    fallback: routing.fallback,
+  };
+  if (intentRoutingIssue(parsed))
+    throw Error("intent_routing: invalid mapping");
+  return compactIntentRouting(parsed);
+}
+
 export function parseRoutingSettings(value: unknown): RoutingSettings {
   const settings = object(value, "routing_settings");
   keys(
@@ -420,6 +511,7 @@ export function parseRoutingSettings(value: unknown): RoutingSettings {
       "default_recovery_paths",
       "channel_stickiness",
       "model_redirects",
+      "intent_routing",
       "builtin_tools",
       ...forwardingSwitchKeys,
       ...identityVersionKeys,
@@ -427,6 +519,7 @@ export function parseRoutingSettings(value: unknown): RoutingSettings {
     "routing_settings",
   );
   const redirects = parseModelRedirects(settings.model_redirects);
+  const intentRouting = parseIntentRouting(settings.intent_routing);
   const parsed = parseFailoverPolicy({
     enabled: settings.allow_unmatched_failover,
     strategy: settings.strategy,
@@ -484,6 +577,7 @@ export function parseRoutingSettings(value: unknown): RoutingSettings {
     ) as Record<(typeof forwardingSwitchKeys)[number], boolean>),
     ...versions,
     model_redirects: redirects,
+    ...(intentRouting ? { intent_routing: intentRouting } : {}),
     ...(settings.builtin_tools !== undefined
       ? { builtin_tools: parseBuiltinTools(settings.builtin_tools) }
       : {}),

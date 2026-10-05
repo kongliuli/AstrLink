@@ -1,8 +1,0 @@
-<Solution>
-  <Folder Name="/src/">
-    <Project Path="src/AstrLink.Shell.Core.Tests/AstrLink.Shell.Core.Tests.csproj" />
-    <Project Path="src/AstrLink.Shell.Core/AstrLink.Shell.Core.csproj" />
-    <Project Path="src/AstrLink.Shell.Host/AstrLink.Shell.Host.csproj" />
-    <Project Path="src/AstrLink.Shell/AstrLink.Shell.csproj" />
-  </Folder>
-</Solution>

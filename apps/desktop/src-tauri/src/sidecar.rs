@@ -2089,6 +2089,81 @@ impl CoreManager {
         Ok(value)
     }
 
+    pub async fn probe_local_auto_classifier(
+        &self,
+        path: String,
+    ) -> Result<serde_json::Value, String> {
+        let input = auto_classifier_path_body(&path)?;
+        let (_, body) = self
+            .authenticated_control(
+                Method::POST,
+                "/control/v1/auto-classifier/local/probe",
+                Some(input),
+                None,
+            )
+            .await?;
+        serde_json::from_slice(&body)
+            .map_err(|error| format!("invalid auto classifier probe: {error}"))
+    }
+
+    pub async fn install_auto_classifier(&self, path: String) -> Result<serde_json::Value, String> {
+        let input = auto_classifier_path_body(&path)?;
+        let (status, body) = self
+            .authenticated_control_status(
+                Method::POST,
+                "/control/v1/auto-classifier",
+                Some(input),
+                None,
+            )
+            .await?;
+        if status.as_u16() == 409
+            && String::from_utf8_lossy(&body).contains("auto_classifier_already_installed")
+        {
+            return Ok(serde_json::json!({
+                "id": "already-installed",
+                "status": "ready"
+            }));
+        }
+        if !status.is_success() {
+            return Err(control_status_error(
+                &Method::POST,
+                "/control/v1/auto-classifier",
+                status,
+                &body,
+            ));
+        }
+        serde_json::from_slice(&body)
+            .map_err(|error| format!("invalid auto classifier installation: {error}"))
+    }
+
+    pub async fn list_auto_classifiers(&self) -> Result<serde_json::Value, String> {
+        let (_, body) = self
+            .authenticated_control(Method::GET, "/control/v1/auto-classifier", None, None)
+            .await?;
+        let value: serde_json::Value = serde_json::from_slice(&body)
+            .map_err(|error| format!("invalid auto classifier list: {error}"))?;
+        if !value.get("items").is_some_and(serde_json::Value::is_array) {
+            return Err("invalid auto classifier list".into());
+        }
+        Ok(value)
+    }
+
+    pub async fn preview_auto_classifier(&self, text: String) -> Result<serde_json::Value, String> {
+        if text.is_empty() || text.len() > 1_048_576 {
+            return Err("classifier preview text is invalid".into());
+        }
+        let (_, body) = self
+            .authenticated_control(
+                Method::POST,
+                "/control/v1/auto-classifier/classify-preview",
+                Some(serde_json::json!({ "text": text })),
+                None,
+            )
+            .await?;
+        serde_json::from_slice(&body)
+            .map_err(|error| format!("invalid auto classifier preview: {error}"))
+    }
+
     pub async fn get_audit_settings(&self) -> Result<serde_json::Value, String> {
         let (_, body) = self
             .authenticated_control(Method::GET, "/control/v1/audit-settings", None, None)
@@ -2550,6 +2625,13 @@ fn control_body_limit(path: &str) -> usize {
     } else {
         MAX_CONTROL_BODY
     }
+}
+
+fn auto_classifier_path_body(path: &str) -> Result<serde_json::Value, String> {
+    if path.is_empty() || path.len() > 4096 || !path.chars().all(|c| c != '\0') {
+        return Err("local classifier path is invalid".into());
+    }
+    Ok(serde_json::json!({ "path": path }))
 }
 
 fn control_status_error(

@@ -2136,6 +2136,37 @@
     "rulesTitle": "Retry rules",
     "rulesHint": "Applied to all API providers by default. Custom failure policies can override these rules.",
     "redirectsInvalid": "Complete the model redirects to save automatically.",
+    "intent": {
+      "title": "Intent routing (astrlink/auto)",
+      "hint": "When a client requests astrlink/auto, a local classifier maps it to the models below. The first choice sticks for the rest of the session.",
+      "categories": {
+        "general": "General",
+        "research": "Research",
+        "coding": "Coding",
+        "architect": "Architect"
+      },
+      "targetPlaceholder": "Select or enter a model ID",
+      "fallbackLabel": "Fallback model",
+      "fallbackRequired": "A fallback model is required when intent routing is enabled.",
+      "autoTarget": "Targets and fallback must not be astrlink/auto.",
+      "pathLabel": "Classifier directory",
+      "pathHint": "The directory must contain model.onnx and tokenizer.json. The bundled package lives at models/astrlink-intent-v1.",
+      "pathRequired": "Enter a classifier directory.",
+      "import": "Import",
+      "importFailed": "Could not import the classifier.",
+      "alreadyInstalled": "Already imported",
+      "installed": "Installed: {{name}}",
+      "previewLabel": "Try classification",
+      "preview": "Preview",
+      "previewFailed": "Preview failed.",
+      "previewCategory": "Class: {{category}} ({{ms}} ms)",
+      "fallback": {
+        "timeout": "The classifier is still loading. Preview again.",
+        "classifier_unavailable": "Classifier unavailable. Import a model and confirm the desktop build includes astrlink-classifier-worker.",
+        "empty_text": "Enter a sentence to classify.",
+        "invalid_text": "The input text is invalid."
+      }
+    },
     "tabs": {
       "modelsAndTools": "Models & tools",
       "redirects": "Model redirects",

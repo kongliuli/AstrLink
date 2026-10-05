@@ -6,6 +6,10 @@ const bridge = vi.hoisted(() => ({
   builtinToolAction: vi.fn().mockResolvedValue({ configured: false }),
   getRoutingSettings: vi.fn(),
   updateRoutingSettings: vi.fn(),
+  listAutoClassifiers: vi.fn().mockResolvedValue({ items: [] }),
+  probeLocalAutoClassifier: vi.fn(),
+  installAutoClassifier: vi.fn(),
+  previewAutoClassifier: vi.fn(),
 }));
 vi.mock("./bridge", () => bridge);
 import { RouteManager } from "./RouteManager";
@@ -59,7 +63,7 @@ it("shows default-setting tabs and clears dirty state on unmount under StrictMod
     ]);
     expect(tabs[0].getAttribute("aria-selected")).toBe("true");
     expect(container.textContent).toContain("Codex 自动审查");
-    expect(container.textContent).not.toContain("astrlink/auto");
+    expect(container.textContent).toContain("astrlink/auto");
     // The redirect editor suggests models from the forwarded services.
     await act(async () =>
       [...container.querySelectorAll("button")]
