@@ -13,6 +13,7 @@ import {
   intentRoutingIssue,
   intentTaxonomyLabels,
   maxRedirectModelLength,
+  suggestIntentRouting,
   type IntentRouting,
 } from "../failure-policy-model";
 import { useT } from "../i18n";
@@ -24,6 +25,9 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Switch } from "./ui/switch";
 import { Textarea } from "./ui/textarea";
+
+/** Relative to the Core data directory; weights stay gitignored. */
+export const defaultAutoClassifierPath = "models/astrlink-intent-v1";
 
 export function IntentRoutingEditor({
   value,
@@ -46,7 +50,7 @@ export function IntentRoutingEditor({
     () => modelOptions.filter((model) => model !== astrlinkAutoModelId),
     [modelOptions],
   );
-  const [path, setPath] = useState("");
+  const [path, setPath] = useState(defaultAutoClassifierPath);
   const [installed, setInstalled] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -141,7 +145,7 @@ export function IntentRoutingEditor({
   };
 
   return (
-    <Panel data-testid="intent-routing-editor">
+    <Panel className="shrink-0" data-testid="intent-routing-editor">
       <PanelHeader
         actions={
           <Switch
@@ -162,6 +166,20 @@ export function IntentRoutingEditor({
         </p>
       </PanelHeader>
       <div className="grid gap-3 p-4">
+        {suggestIntentRouting(targets) ? (
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={disabled}
+            onClick={() => {
+              const suggested = suggestIntentRouting(targets);
+              if (!suggested) return;
+              change(suggested);
+            }}
+          >
+            {t("routing.intent.fillFromCatalog")}
+          </Button>
+        ) : null}
         {issue === "empty_fallback" ? (
           <FormMessage tone="error">
             {t("routing.intent.fallbackRequired")}

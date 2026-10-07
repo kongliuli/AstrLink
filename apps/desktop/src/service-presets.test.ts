@@ -132,6 +132,12 @@ describe("HTTP service product presets", () => {
   it("keeps usage-based providers separate from coding plans and advertises only supported protocols", () => {
     expect(payAsYouGoPresetIDs).toContain("opencode_zen");
     expect(codingPlanPresetIDs).toContain("opencode_go");
+    expect(httpServicePreset("opencode_go").models).toEqual([
+      "gpt-5.6-luna",
+      "qwen3.8-max",
+      "kimi-k3",
+      "minimax-m3",
+    ]);
     expect(
       payAsYouGoPresetIDs.some((kind) => codingPlanPresetIDs.includes(kind)),
     ).toBe(false);

@@ -8,6 +8,7 @@ import {
   parseFailurePolicy,
   parseFailoverPolicy,
   parseRoutingSettings,
+  suggestIntentRouting,
   subscriptionProtectionKeys,
   validIdentityVersion,
   type ModelRedirect,
@@ -238,6 +239,28 @@ describe("failure policies", () => {
           },
         }),
       ).toThrow();
+    });
+
+    it("suggests OpenCode Go taxonomy targets from a connected catalog", () => {
+      expect(suggestIntentRouting([])).toBeUndefined();
+      expect(
+        suggestIntentRouting([
+          "minimax-m3",
+          "kimi-k3",
+          "gpt-5.6-luna",
+          "qwen3.8-max",
+          "astrlink/auto",
+        ]),
+      ).toEqual({
+        enabled: true,
+        fallback: "gpt-5.6-luna",
+        targets: {
+          general: "minimax-m3",
+          research: "kimi-k3",
+          coding: "gpt-5.6-luna",
+          architect: "qwen3.8-max",
+        },
+      });
     });
 
     it("rejects malformed and invalid redirect lists", () => {

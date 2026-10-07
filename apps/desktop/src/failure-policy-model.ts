@@ -129,6 +129,50 @@ export function defaultIntentRouting(): IntentRouting {
   return { enabled: false, targets: {}, fallback: "" };
 }
 
+/** Preferred OpenCode Go / coding-plan IDs per taxonomy; first hit in `models` wins. */
+export const intentPreferredModels: Record<
+  IntentCategory | "fallback",
+  readonly string[]
+> = {
+  coding: ["gpt-5.6-luna", "gpt-5.6", "glm-5.3", "kimi-k3"],
+  architect: ["qwen3.8-max", "gpt-5.6-luna", "glm-5.3"],
+  research: ["kimi-k3", "kimi-k2.5", "gpt-5.6-luna"],
+  general: ["minimax-m3", "glm-5.3-flash", "kimi-k3", "gpt-5.6-luna"],
+  fallback: ["gpt-5.6-luna", "minimax-m3", "kimi-k3", "glm-5.3"],
+};
+
+function firstListed(
+  models: readonly string[],
+  preferred: readonly string[],
+): string {
+  const listed = new Set(models);
+  for (const model of preferred) if (listed.has(model)) return model;
+  return models[0] ?? "";
+}
+
+/** Map catalog models onto taxonomy. Empty catalog → undefined (nothing to enable). */
+export function suggestIntentRouting(
+  models: readonly string[],
+): IntentRouting | undefined {
+  const available = [
+    ...new Set(
+      models.filter((model) => model && model !== astrlinkAutoModelId),
+    ),
+  ];
+  if (available.length === 0) return undefined;
+  const fallback = firstListed(available, intentPreferredModels.fallback);
+  return {
+    enabled: true,
+    fallback,
+    targets: {
+      general: firstListed(available, intentPreferredModels.general),
+      research: firstListed(available, intentPreferredModels.research),
+      coding: firstListed(available, intentPreferredModels.coding),
+      architect: firstListed(available, intentPreferredModels.architect),
+    },
+  };
+}
+
 export function expandIntentRouting(
   routing: IntentRouting | undefined,
 ): IntentRouting {

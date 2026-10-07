@@ -2138,7 +2138,7 @@
     "redirectsInvalid": "请完善模型重定向，完成后会自动保存。",
     "intent": {
       "title": "意图路由（astrlink/auto）",
-      "hint": "客户端请求 astrlink/auto 时，用本地分类器映射到下面的模型；同一会话会粘住首次结果。",
+      "hint": "客户端请求 astrlink/auto 时，用本地分类器映射到下面的模型；同一会话会粘住首次结果。不接 API 也可以先手填模型 ID 并保存映射。",
       "categories": {
         "general": "日常",
         "research": "调研",
@@ -2150,7 +2150,7 @@
       "fallbackRequired": "启用意图路由时必须填写兜底模型。",
       "autoTarget": "目标和兜底都不能填 astrlink/auto。",
       "pathLabel": "分类器目录",
-      "pathHint": "目录内需有 model.onnx 和 tokenizer.json。仓库里的包在 models/astrlink-intent-v1。",
+      "pathHint": "\u76f8\u5bf9\u76ee\u5f55\u57fa\u4e8e Core \u6570\u636e\u76ee\u5f55\uff0c\u4e5f\u53ef\u586b\u5199\u7edd\u5bf9\u8def\u5f84\uff1b\u76ee\u5f55\u9700\u5305\u542b model.onnx \u548c tokenizer.json\u3002",
       "pathRequired": "请填写分类器目录。",
       "import": "导入",
       "importFailed": "导入分类器失败。",
@@ -2158,6 +2158,7 @@
       "installed": "已安装：{{name}}",
       "previewLabel": "试分类",
       "preview": "预览",
+      "fillFromCatalog": "按已接入模型填充分类",
       "previewFailed": "预览失败。",
       "previewCategory": "分类：{{category}}（{{ms}} ms）",
       "fallback": {

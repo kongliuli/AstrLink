@@ -58,6 +58,26 @@ func TestProbeAndInstallLocalClassifier(t *testing.T) {
 	}
 }
 
+func TestRelativeLocalPathUsesCoreDataDirectory(t *testing.T) {
+	dataDirectory := t.TempDir()
+	registry, err := NewRegistry(filepath.Join(dataDirectory, "auto-classifier"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	source := filepath.Join(dataDirectory, "models", "intent")
+	if err := os.MkdirAll(source, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	writeClassifierFixture(t, source, "ModernBertForSequenceClassification", autotaxonomy.Labels, true)
+	path := filepath.Join("models", "intent")
+	if _, err := registry.ProbeLocal(context.Background(), contract.AutoClassifierLocalProbeRequest{Path: path}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := registry.Install(context.Background(), contract.AutoClassifierInstallRequest{Path: path}); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestProbeRejectsWrongArchitectureAndLegacyCodeLabel(t *testing.T) {
 	registry, err := NewRegistry(t.TempDir())
 	if err != nil {

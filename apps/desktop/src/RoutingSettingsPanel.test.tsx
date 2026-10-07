@@ -909,6 +909,51 @@ describe("shared global recovery settings", () => {
     });
   });
 
+  it("saves typed intent targets with no API providers", async () => {
+    const dirty = vi.fn();
+    await act(async () =>
+      root.render(
+        <RoutingSettingsPanel services={[]} ready onDirtyChange={dirty} />,
+      ),
+    );
+    await typeRedirect("编码", "local-dev");
+    await typeRedirect("兜底模型", "local-dev");
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="intent-routing-editor"] [role="switch"]',
+        )!
+        .click(),
+    );
+    await flushAutosave();
+    expect(bridge.updateRoutingSettings).toHaveBeenCalledExactlyOnceWith({
+      intent_routing: {
+        enabled: true,
+        targets: { coding: "local-dev" },
+        fallback: "local-dev",
+      },
+    });
+    expect(dirty).toHaveBeenLastCalledWith(false);
+  });
+
+  it("does not save enabled intent routing without a fallback", async () => {
+    await act(async () =>
+      root.render(
+        <RoutingSettingsPanel services={[]} ready onDirtyChange={vi.fn()} />,
+      ),
+    );
+    await act(async () =>
+      container
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="intent-routing-editor"] [role="switch"]',
+        )!
+        .click(),
+    );
+    await flushAutosave();
+    expect(bridge.updateRoutingSettings).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("启用意图路由时必须填写兜底模型。");
+  });
+
   it("does not mark an unchanged group reset as dirty", async () => {
     bridge.getRoutingSettings.mockResolvedValue({
       ...settings(),

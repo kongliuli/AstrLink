@@ -98,7 +98,7 @@ export function RoutingSettingsPanel({
   const redirectsInvalid =
     draft !== null &&
     modelRedirectIssues(draft.model_redirects ?? []).some(Boolean);
-  const modelOptions = useMemo(
+  const catalogModels = useMemo(
     () =>
       [
         ...new Set(
@@ -106,9 +106,18 @@ export function RoutingSettingsPanel({
             .filter((service) => service.enabled)
             .flatMap((service) => service.models),
         ),
-      ].sort(),
+      ]
+        .filter(Boolean)
+        .sort(),
     [services],
   );
+  const modelOptions = useMemo(() => {
+    const intent = draft?.intent_routing;
+    const mapped = intent
+      ? [intent.fallback, ...Object.values(intent.targets ?? {})]
+      : [];
+    return [...new Set([...catalogModels, ...mapped])].filter(Boolean).sort();
+  }, [catalogModels, draft?.intent_routing]);
   const mutationVersion = useRef(0);
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
@@ -318,7 +327,7 @@ export function RoutingSettingsPanel({
               </fieldset>
               <IntentRoutingEditor
                 value={draft.intent_routing}
-                modelOptions={modelOptions}
+                modelOptions={catalogModels}
                 disabled={!ready}
                 onEditingChange={setEditingRedirect}
                 onChange={(intent_routing) =>

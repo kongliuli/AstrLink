@@ -219,6 +219,7 @@ const profileDefinitions: Readonly<
       "openai.models",
     ],
     advancedOnStart: false,
+    models: ["gpt-5.6-luna", "qwen3.8-max", "kimi-k3", "minimax-m3"],
   },
   opencode_zen: {
     id: "opencode_zen",

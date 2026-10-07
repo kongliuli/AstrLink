@@ -56,7 +56,7 @@ func (registry *Registry) ProbeLocal(
 	if err := contract.ValidateAutoClassifierLocalProbeRequest(request); err != nil {
 		return contract.AutoClassifierProbeResponse{}, ErrInvalidConfig
 	}
-	directory, err := canonicalLocalDirectory(request.Path)
+	directory, err := registry.localDirectory(request.Path)
 	if err != nil {
 		return contract.AutoClassifierProbeResponse{}, err
 	}
@@ -73,6 +73,13 @@ func (registry *Registry) ProbeLocal(
 	}
 	registry.cacheProbe(entry)
 	return entry.response, nil
+}
+
+func (registry *Registry) localDirectory(candidate string) (string, error) {
+	if !filepath.IsAbs(candidate) {
+		candidate = filepath.Join(filepath.Dir(registry.root), candidate)
+	}
+	return canonicalLocalDirectory(candidate)
 }
 
 func canonicalLocalDirectory(candidate string) (string, error) {

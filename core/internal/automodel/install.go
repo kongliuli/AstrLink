@@ -21,7 +21,7 @@ func (registry *Registry) Install(
 	if err := contract.ValidateAutoClassifierInstallRequest(request); err != nil {
 		return contract.AutoClassifierInstallation{}, ErrInvalidConfig
 	}
-	directory, err := canonicalLocalDirectory(request.Path)
+	directory, err := registry.localDirectory(request.Path)
 	if err != nil {
 		return contract.AutoClassifierInstallation{}, err
 	}

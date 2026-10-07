@@ -2138,7 +2138,7 @@
     "redirectsInvalid": "Complete the model redirects to save automatically.",
     "intent": {
       "title": "Intent routing (astrlink/auto)",
-      "hint": "When a client requests astrlink/auto, a local classifier maps it to the models below. The first choice sticks for the rest of the session.",
+      "hint": "When a client requests astrlink/auto, a local classifier maps it to the models below. The first choice sticks for the rest of the session. You can type model IDs and save the mapping without connecting an API.",
       "categories": {
         "general": "General",
         "research": "Research",
@@ -2150,7 +2150,7 @@
       "fallbackRequired": "A fallback model is required when intent routing is enabled.",
       "autoTarget": "Targets and fallback must not be astrlink/auto.",
       "pathLabel": "Classifier directory",
-      "pathHint": "The directory must contain model.onnx and tokenizer.json. The bundled package lives at models/astrlink-intent-v1.",
+      "pathHint": "Relative directories use the Core data directory. You can also enter an absolute path; the directory must contain model.onnx and tokenizer.json.",
       "pathRequired": "Enter a classifier directory.",
       "import": "Import",
       "importFailed": "Could not import the classifier.",
@@ -2158,6 +2158,7 @@
       "installed": "Installed: {{name}}",
       "previewLabel": "Try classification",
       "preview": "Preview",
+      "fillFromCatalog": "Fill from connected models",
       "previewFailed": "Preview failed.",
       "previewCategory": "Class: {{category}} ({{ms}} ms)",
       "fallback": {

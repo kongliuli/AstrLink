@@ -55,6 +55,11 @@ func NewRegistry(root string) (*Registry, error) {
 	if root == "" {
 		return nil, ErrInvalidConfig
 	}
+	var err error
+	root, err = filepath.Abs(root)
+	if err != nil {
+		return nil, err
+	}
 	if err := os.MkdirAll(filepath.Join(root, installationsDirName), 0o700); err != nil {
 		return nil, err
 	}
