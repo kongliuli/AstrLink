@@ -12,6 +12,7 @@
 # Go
 core/bin/
 core/coverage.out
+/modols/
 
 # Desktop frontend
 apps/desktop/node_modules/
