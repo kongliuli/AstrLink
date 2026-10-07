@@ -34,13 +34,13 @@ import (
 )
 
 const (
-	protocolVersion = 1
-	maxFrameBytes   = 64 << 20
-	// Cold load of the MiniLM ONNX package can exceed 2s on Windows (DirectML).
-	// ponytail: one timeout covers later calls too; 15s is the ceiling.
-	defaultTimeout    = 15 * time.Second
-	processStopWait   = 5 * time.Second
-	maxStartupRetries = 1
+	protocolVersion         = 1
+	maxFrameBytes           = 64 << 20
+	defaultStartupTimeout   = 15 * time.Second
+	defaultInferenceTimeout = 2 * time.Second
+	defaultQueueTimeout     = 250 * time.Millisecond
+	processStopWait         = 5 * time.Second
+	maxStartupRetries       = 1
 
 	installationManifestName     = "astrlink-classifier-model.json"
 	maxInstallationManifestBytes = 256 << 10
@@ -73,9 +73,12 @@ func (function ReadyInstallationProviderFunc) ReadyInstallation(
 }
 
 type Config struct {
-	ExecutablePath string
-	Model          ReadyInstallationProvider
-	Timeout        time.Duration
+	ExecutablePath   string
+	Model            ReadyInstallationProvider
+	Timeout          time.Duration
+	StartupTimeout   time.Duration
+	InferenceTimeout time.Duration
+	QueueTimeout     time.Duration
 }
 
 type Outcome struct {
@@ -89,12 +92,14 @@ func (outcome Outcome) OK() bool {
 }
 
 type Client struct {
-	executablePath string
-	model          ReadyInstallationProvider
-	timeout        time.Duration
-	command        func(string, ...string) *exec.Cmd
-	slot           chan struct{}
-	nextRequestID  atomic.Uint64
+	executablePath   string
+	model            ReadyInstallationProvider
+	startupTimeout   time.Duration
+	inferenceTimeout time.Duration
+	queueTimeout     time.Duration
+	command          func(string, ...string) *exec.Cmd
+	slot             chan struct{}
+	nextRequestID    atomic.Uint64
 
 	mu       sync.Mutex
 	process  *workerProcess
@@ -117,18 +122,30 @@ func New(config Config) (*Client, error) {
 	if config.Model == nil {
 		return nil, fmt.Errorf("classifier installation provider is required")
 	}
-	if config.Timeout == 0 {
-		config.Timeout = defaultTimeout
-	}
-	if config.Timeout < 100*time.Millisecond {
-		return nil, fmt.Errorf("classifier worker timeout is too short")
+	for _, stage := range []struct {
+		timeout  *time.Duration
+		fallback time.Duration
+	}{
+		{&config.StartupTimeout, defaultStartupTimeout}, {&config.InferenceTimeout, defaultInferenceTimeout}, {&config.QueueTimeout, defaultQueueTimeout},
+	} {
+		if *stage.timeout == 0 {
+			*stage.timeout = config.Timeout
+		}
+		if *stage.timeout == 0 {
+			*stage.timeout = stage.fallback
+		}
+		if *stage.timeout < 100*time.Millisecond {
+			return nil, fmt.Errorf("classifier worker timeout is too short")
+		}
 	}
 	return &Client{
-		executablePath: config.ExecutablePath,
-		model:          config.Model,
-		timeout:        config.Timeout,
-		command:        exec.Command,
-		slot:           make(chan struct{}, 1),
+		executablePath:   config.ExecutablePath,
+		model:            config.Model,
+		startupTimeout:   config.StartupTimeout,
+		inferenceTimeout: config.InferenceTimeout,
+		queueTimeout:     config.QueueTimeout,
+		command:          exec.Command,
+		slot:             make(chan struct{}, 1),
 	}, nil
 }
 
@@ -153,14 +170,16 @@ func (client *Client) Classify(ctx context.Context, text string) Outcome {
 	if strings.TrimSpace(text) == "" || !utf8.ValidString(text) {
 		return Outcome{FallbackReason: FallbackEmptyText}
 	}
-	ctx, cancel := context.WithTimeout(ctx, client.timeout)
-	defer cancel()
+	queueCtx, cancelQueue := context.WithTimeout(ctx, client.queueTimeout)
 
 	select {
 	case client.slot <- struct{}{}:
+		cancelQueue()
 		defer func() { <-client.slot }()
-	case <-ctx.Done():
-		return fallbackFromContext(ctx)
+	case <-queueCtx.Done():
+		outcome := fallbackFromContext(queueCtx)
+		cancelQueue()
+		return outcome
 	}
 
 	installation, ok := client.model.FirstReady()
@@ -179,15 +198,22 @@ func (client *Client) Classify(ctx context.Context, text string) Outcome {
 	}
 
 	for attempt := 0; attempt <= maxStartupRetries; attempt++ {
-		process, err := client.ensureProcess(ctx, installation)
+		startupCtx, cancelStartup := context.WithTimeout(ctx, client.startupTimeout)
+		process, err := client.ensureProcess(startupCtx, installation)
+		cancelStartup()
 		if err != nil {
 			return fallbackFromError(err)
 		}
-		response, err := client.exchange(ctx, process, payload)
+		inferenceCtx, cancelInference := context.WithTimeout(ctx, client.inferenceTimeout)
+		response, err := client.exchange(inferenceCtx, process, payload)
+		cancelInference()
 		if err == nil {
 			return outcomeFromResponse(request.ID, response)
 		}
 		client.stopProcess(process)
+		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+			return fallbackFromError(err)
+		}
 		if attempt == maxStartupRetries {
 			client.latch(installation)
 			return fallbackFromError(err)

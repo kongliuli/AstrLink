@@ -169,6 +169,9 @@ func TestClassifierWorkerHelper(t *testing.T) {
 		return
 	}
 	mode := os.Getenv("ASTRLINK_CLASSIFIER_WORKER_TEST_MODE")
+	if mode == "cold" {
+		time.Sleep(300 * time.Millisecond)
+	}
 	ready, err := json.Marshal(workerReady{Version: protocolVersion, Ready: true})
 	if err != nil || writeFrame(os.Stdout, ready) != nil {
 		os.Exit(4)
@@ -197,5 +200,30 @@ func TestClassifierWorkerHelper(t *testing.T) {
 		if err != nil || writeFrame(os.Stdout, encoded) != nil {
 			os.Exit(3)
 		}
+	}
+}
+
+func TestStageTimeoutsKeepColdStartAndQueueIndependent(t *testing.T) {
+	installation := writeReadyInstallation(t)
+	provider := ReadyInstallationProviderFunc(func() (contract.ReadyAutoClassifierInstallation, bool) {
+		return installation, true
+	})
+	client := newTestClient(t, provider, "cold", time.Second)
+	client.inferenceTimeout = 100 * time.Millisecond
+	client.queueTimeout = 100 * time.Millisecond
+	if got := client.Classify(context.Background(), "cold start"); !got.OK() {
+		t.Fatalf("cold start consumed inference deadline: %+v", got)
+	}
+	process := client.process
+	client.slot <- struct{}{}
+	if got := client.Classify(context.Background(), "queued"); got.FallbackReason != FallbackTimeout {
+		t.Fatalf("queue deadline = %+v", got)
+	}
+	<-client.slot
+	if client.process != process || !process.running() {
+		t.Fatal("queue timeout stopped the healthy worker")
+	}
+	if got := client.Classify(context.Background(), "warm"); !got.OK() {
+		t.Fatalf("warm request = %+v", got)
 	}
 }
