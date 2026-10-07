@@ -27,6 +27,7 @@ import (
 	"github.com/QuantumNous/astrlink/core/internal/controlapi"
 	"github.com/QuantumNous/astrlink/core/internal/coreapp"
 	"github.com/QuantumNous/astrlink/core/internal/endpoint"
+	"github.com/QuantumNous/astrlink/core/internal/hunyuanapi"
 	"github.com/QuantumNous/astrlink/core/internal/ingress"
 	"github.com/QuantumNous/astrlink/core/internal/networkproxy"
 	"github.com/QuantumNous/astrlink/core/internal/parentwatch"
@@ -37,6 +38,7 @@ import (
 	"github.com/QuantumNous/astrlink/core/internal/relaykitbridge"
 	"github.com/QuantumNous/astrlink/core/internal/servicemodel"
 	"github.com/QuantumNous/astrlink/core/internal/servicetest"
+	storagecontract "github.com/QuantumNous/astrlink/core/internal/storage"
 	"github.com/QuantumNous/astrlink/core/internal/storage/sqlite"
 	"github.com/QuantumNous/astrlink/core/internal/subscription"
 )
@@ -64,8 +66,22 @@ func main() {
 	flag.Uint64Var(&maxRequestBodyMiB, "max-request-body-mib", 0, "maximum inference request body size in MiB; 0 means unlimited")
 	flag.IntVar(&responseStartTimeoutSeconds, "response-start-timeout-seconds", responseStartTimeoutSeconds, "seconds to wait for upstream response headers before failing over; 0 waits indefinitely")
 	flag.StringVar(&outboundProxy, "outbound-proxy", outboundProxy, "outbound proxy mode: environment, system, or direct")
+	hunyuanMock := false
+	var hunyuanBindings []string
+	flag.Func("hunyuan-project-binding", "explicit token-ID=project-ID binding; repeat for each token", func(value string) error {
+		token, project, ok := strings.Cut(value, "=")
+		if !ok || strings.TrimSpace(token) == "" || strings.TrimSpace(project) == "" {
+			return fmt.Errorf("binding must be token-ID=project-ID")
+		}
+		hunyuanBindings = append(hunyuanBindings, value)
+		return nil
+	})
+	flag.BoolVar(&hunyuanMock, "hunyuan-mock", false, "enable /hunyuan/ai/v1 with the built-in mock provider (also ASTRLINK_HUNYUAN_MOCK=1)")
 	flag.CommandLine.SetOutput(os.Stderr)
 	flag.Parse()
+	if os.Getenv("ASTRLINK_HUNYUAN_MOCK") == "1" {
+		hunyuanMock = true
+	}
 
 	logger := log.New(os.Stderr, "astrlink-core: ", log.LstdFlags)
 	if err := ingress.ValidateMaxConcurrentInspections(maxConcurrentInspections); err != nil {
@@ -135,6 +151,19 @@ func main() {
 			_ = store.Close()
 			logger.Printf("configure persistent access tokens: %v", err)
 			os.Exit(1)
+		}
+		if _, err := store.RecoverPendingHunyuanInvocations(ctx); err != nil {
+			_ = store.Close()
+			logger.Printf("recover interrupted hunyuan invocations: %v", err)
+			os.Exit(1)
+		}
+		for _, binding := range hunyuanBindings {
+			token, project, _ := strings.Cut(binding, "=")
+			if err := store.EnsureHunyuanProjectBinding(ctx, contract.AccessTokenID(strings.TrimSpace(token)), strings.TrimSpace(project)); err != nil {
+				_ = store.Close()
+				logger.Printf("configure explicit hunyuan project binding: %v", err)
+				os.Exit(1)
+			}
 		}
 		privacyModel, err := privacymodel.NewRegistry(ctx, privacymodel.RegistryConfig{
 			RootDirectory: filepath.Join(dataDirectory, "privacy-model"),
@@ -323,7 +352,43 @@ func main() {
 		dependencies.NewInferenceHandler = func(address string) (http.Handler, error) {
 			production := gatewayDependencies
 			production.AllowedHost = address
-			return ingress.NewProduction(production)
+			base, err := ingress.NewProduction(production)
+			if err != nil {
+				return nil, err
+			}
+			hunyuanReal := hunyuanapi.RealEnabled()
+			if !hunyuanMock && !hunyuanReal {
+				return base, nil
+			}
+			var provider hunyuanapi.Provider = hunyuanapi.MockProvider{}
+			if hunyuanReal {
+				provider = hunyuanapi.GatewayProvider{Handler: base, Models: func() ([]string, error) {
+					enabled := true
+					options := storagecontract.ServiceListOptions{Limit: 200, Enabled: &enabled}
+					models := []string{contract.AstrLinkAutoModelID}
+					for {
+						page, err := store.ListServices(context.Background(), options)
+						if err != nil {
+							return nil, err
+						}
+						for _, item := range page.Items {
+							models = append(models, item.Service.Models...)
+						}
+						if page.NextCursor == "" {
+							return models, nil
+						}
+						options.Cursor = page.NextCursor
+					}
+				}}
+				logger.Printf("hunyuan ai: configured gateway providers enabled")
+			} else {
+				if err := store.BindAllAccessTokensToHunyuanDev(context.Background()); err != nil {
+					return nil, fmt.Errorf("bind hunyuan mock projects: %w", err)
+				}
+				logger.Printf("hunyuan ai: mock provider enabled")
+			}
+			hy := hunyuanapi.New(store, production.AccessTokenAuthenticator, provider)
+			return hunyuanapi.Mount(base, hy), nil
 		}
 		monitorCtx, stopMonitors := context.WithCancel(ctx)
 		var monitors sync.WaitGroup

@@ -671,5 +671,58 @@ WHERE id = 'policy_privacy_default'
 		{Version: 40, Name: "learned_client_identity", Statements: []string{
 			`CREATE TABLE learned_client_identity (provider TEXT PRIMARY KEY, document_json TEXT NOT NULL, updated_at TEXT NOT NULL)`,
 		}},
+		{Version: 41, Name: "hunyuan_ai_v1", Statements: []string{
+			`CREATE TABLE hunyuan_project_bindings (
+    access_token_id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL CHECK(length(project_id) BETWEEN 1 AND 64)
+)`,
+			`CREATE TABLE hunyuan_budget (
+    project_id TEXT NOT NULL,
+    policy_ref TEXT NOT NULL,
+    remaining INTEGER NOT NULL CHECK(remaining >= 0),
+    inflight INTEGER NOT NULL CHECK(inflight >= 0),
+    max_inflight INTEGER NOT NULL CHECK(max_inflight >= 1),
+    PRIMARY KEY(project_id, policy_ref)
+)`,
+			`CREATE TABLE hunyuan_invocations (
+    id TEXT PRIMARY KEY,
+    project_id TEXT NOT NULL,
+    access_token_id TEXT NOT NULL,
+    status TEXT NOT NULL,
+    requested_model TEXT NOT NULL,
+    actual_model TEXT,
+    provider TEXT,
+    task_ref TEXT,
+    blueprint_ref TEXT,
+    input_hash TEXT NOT NULL,
+    input_bytes INTEGER NOT NULL CHECK(input_bytes >= 0),
+    output_json TEXT,
+    usage_json TEXT,
+    cost_status TEXT NOT NULL,
+    cost_amount TEXT,
+    error_code TEXT,
+    error_message TEXT,
+    trace_id TEXT NOT NULL,
+    idempotency_key TEXT,
+    request_hash TEXT NOT NULL,
+    budget_policy_ref TEXT NOT NULL,
+    cancel_accepted INTEGER NOT NULL DEFAULT 0,
+    local_connection_closed INTEGER NOT NULL DEFAULT 0,
+    remote_stop TEXT NOT NULL DEFAULT 'not_applicable',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    finished_at TEXT
+)`,
+			`CREATE TABLE hunyuan_idempotency (
+    project_id TEXT NOT NULL,
+    idempotency_key TEXT NOT NULL,
+    request_hash TEXT NOT NULL,
+    invocation_id TEXT NOT NULL,
+    PRIMARY KEY(project_id, idempotency_key)
+)`,
+			`CREATE INDEX hunyuan_invocations_project_idx ON hunyuan_invocations(project_id, created_at DESC)`,
+			`INSERT INTO hunyuan_budget(project_id, policy_ref, remaining, inflight, max_inflight)
+VALUES ('hunyuan-dev', 'default', 100, 0, 8)`,
+		}},
 	}
 }

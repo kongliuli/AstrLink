@@ -756,6 +756,10 @@ func (handler *Handler) allowInferenceBoundary(writer http.ResponseWriter, reque
 	return true
 }
 
+func (handler *Handler) CheckInferenceBoundary(writer http.ResponseWriter, request *http.Request) bool {
+	return handler.allowInferenceBoundary(writer, request)
+}
+
 func (handler *Handler) loadAuditSettings(ctx context.Context) contract.AuditSettings {
 	settings := contract.DefaultAuditSettings()
 	if handler.auditSettings == nil {

@@ -1,0 +1,8 @@
+{
+  "model": "mock-echo",
+  "input": "hello from hunyuan",
+  "task_ref": "task_demo_1",
+  "blueprint_ref": "bp_demo_1",
+  "budget_policy_ref": "default",
+  "timeout_ms": 5000
+}

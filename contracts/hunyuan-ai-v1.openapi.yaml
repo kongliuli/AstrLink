@@ -1,0 +1,212 @@
+openapi: 3.1.0
+info:
+  title: AstrLink Hunyuan AI API
+  version: 1.0.0
+  summary: Unified LLM invoke surface for Hunyuan. Not an Agent execution API.
+servers:
+  - url: http://127.0.0.1:18317/hunyuan/ai/v1
+paths:
+  /capabilities:
+    get:
+      security: [{ InferenceToken: [] }]
+      responses:
+        "200":
+          description: Capability matrix with supported, unsupported, or unknown.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Capabilities" }
+        "401": { $ref: "#/components/responses/Error" }
+  /invoke:
+    post:
+      security: [{ InferenceToken: [] }]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          schema: { type: string, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InvokeRequest" }
+      responses:
+        "200":
+          description: JSON result or SSE stream.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Invocation" }
+            text/event-stream:
+              schema: { type: string }
+        "401": { $ref: "#/components/responses/Error" }
+        "403": { $ref: "#/components/responses/Error" }
+        "409": { $ref: "#/components/responses/Error" }
+        "422": { $ref: "#/components/responses/Error" }
+  /invocations/{invocation_id}:
+    get:
+      security: [{ InferenceToken: [] }]
+      parameters:
+        - in: path
+          name: invocation_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Invocation" }
+        "404": { $ref: "#/components/responses/Error" }
+  /invocations/{invocation_id}/cancel:
+    post:
+      security: [{ InferenceToken: [] }]
+      parameters:
+        - in: path
+          name: invocation_id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CancelResponse" }
+  /agent/{path}:
+    post:
+      security: [{ InferenceToken: [] }]
+      parameters:
+        - in: path
+          name: path
+          required: true
+          schema: { type: string }
+      responses:
+        "501":
+          description: Agent execution is not connected in this phase.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorBody" }
+components:
+  securitySchemes:
+    InferenceToken:
+      type: http
+      scheme: bearer
+      description: Local astr_ inference token. Project identity comes from the binding table, not the body.
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: "#/components/schemas/ErrorBody" }
+  schemas:
+    Support:
+      type: string
+      enum: [supported, unsupported, unknown]
+    Capabilities:
+      type: object
+      required: [models]
+      properties:
+        models:
+          type: array
+          items:
+            type: object
+            required: [id, stream, tools, structured_output]
+            properties:
+              id: { type: string }
+              stream: { $ref: "#/components/schemas/Support" }
+              tools: { $ref: "#/components/schemas/Support" }
+              structured_output: { $ref: "#/components/schemas/Support" }
+              notes: { type: string }
+    InvokeRequest:
+      type: object
+      required: [model, input]
+      additionalProperties: false
+      properties:
+        project: { type: string }
+        task_ref: { type: string }
+        blueprint_ref: { type: string }
+        model: { type: string }
+        input: { type: string }
+        max_output_tokens: { type: integer, minimum: 1 }
+        timeout_ms: { type: integer, minimum: 1 }
+        budget_policy_ref: { type: string }
+        response_schema: { type: object }
+        tools:
+          type: array
+          items:
+            type: object
+            required: [name]
+            properties:
+              name: { type: string }
+              description: { type: string }
+    InvocationStatus:
+      type: string
+      enum:
+        [
+          accepted,
+          reserved,
+          dispatching,
+          running,
+          streaming,
+          unknown,
+          succeeded,
+          failed,
+          canceled,
+          timed_out,
+        ]
+    CostStatus:
+      type: string
+      enum: [known, unknown, not_applicable]
+    Output:
+      type: object
+      required: [type]
+      properties:
+        type: { type: string, enum: [text, json, tool_calls] }
+        text: { type: string }
+        json: { type: object }
+        tool_calls:
+          type: array
+          items:
+            type: object
+            required: [name, arguments]
+            properties:
+              name: { type: string }
+              arguments: { type: object }
+    Invocation:
+      type: object
+      required: [invocation_id, status, requested_model, cost_status, trace_id]
+      properties:
+        invocation_id: { type: string }
+        status: { $ref: "#/components/schemas/InvocationStatus" }
+        requested_model: { type: string }
+        actual_model: { type: string, nullable: true }
+        provider: { type: string, nullable: true }
+        output: { $ref: "#/components/schemas/Output" }
+        usage:
+          type: object
+          properties:
+            input_tokens: { type: integer }
+            output_tokens: { type: integer }
+        cost_status: { $ref: "#/components/schemas/CostStatus" }
+        cost: { type: number, nullable: true }
+        error: { $ref: "#/components/schemas/Error" }
+        trace_id: { type: string }
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+    ErrorBody:
+      type: object
+      required: [error]
+      properties:
+        error: { $ref: "#/components/schemas/Error" }
+    CancelResponse:
+      type: object
+      required:
+        [invocation, cancel_accepted, local_connection_closed, remote_stop]
+      properties:
+        invocation: { $ref: "#/components/schemas/Invocation" }
+        cancel_accepted: { type: boolean }
+        local_connection_closed: { type: boolean }
+        remote_stop:
+          type: string
+          enum: [stopped, unknown, not_applicable]
+        cost_status: { $ref: "#/components/schemas/CostStatus" }
+        cost: { type: number, nullable: true }
