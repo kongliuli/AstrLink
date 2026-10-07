@@ -16,9 +16,10 @@ import argparse
 import hashlib
 import json
 import random
-import shutil
 import unicodedata
 from pathlib import Path
+
+from output_guard import create_output_directory
 
 import numpy as np
 import onnxruntime as ort
@@ -105,9 +106,7 @@ def main() -> None:
     torch.manual_seed(args.seed)
 
     out: Path = args.out
-    if out.exists():
-        shutil.rmtree(out)
-    out.mkdir(parents=True)
+    create_output_directory(out)
     AutoTokenizer.from_pretrained(args.base).save_pretrained(out)
     for extra in ("sentencepiece.bpe.model", "vocab.txt", "tokenizer_config.json", "special_tokens_map.json"):
         (out / extra).unlink(missing_ok=True)
